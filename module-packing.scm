@@ -122,10 +122,20 @@
             (is-recur "r|recure")
             . restargs
         )
+        ; for test
         (print outfile-name)
         (print modules-name)
         (print is-recur)
-        (print restargs)
+
+        ; コマンドラインオプションにモジュールディレクトリの指定がない場合
+        (if (and (not (pair? restargs)) (not modules-name))
+            (print "require module directory name.")
+            (exit 0)
+        )
+
+
+
+
     )
 )
 
