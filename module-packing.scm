@@ -117,10 +117,15 @@
 (define (main args)
     (let-args (cdr args)
         (
-            (out-filename "o|outfile=s")
+            (outfile-name "o|outfile=s")
+            (modules-name "m|module=s")
+            (is-recur "r|recure")
             . restargs
         )
-        (print out-filename)
+        (print outfile-name)
+        (print modules-name)
+        (print is-recur)
+        (print restargs)
     )
 )
 
