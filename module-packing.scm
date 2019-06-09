@@ -85,17 +85,17 @@
 )
 
 ; (require ...) (import ...)を書き込む
-(define (write-require-import modules out-port)
+(define (write-require-import modules pack-name out-port)
     (cond
         ((null? modules))
         (else
             ; S式で再帰しながら書いたほうがきれいだよね...
             ; require
-            (display (string-append "(require \"./modules/" (x->string (car modules)) "\")") out-port)
+            (display (string-append "(require \"./" pack-name "/" (x->string (car modules)) "\")") out-port)
             ; import
             (display (string-append "(import " (x->string (car modules)) ")") out-port)
             (newline out-port)
-            (write-require-import (cdr modules) out-port)
+            (write-require-import (cdr modules) pack-name out-port)
         )
     )
 )
@@ -164,7 +164,7 @@
                 (display (list (string-append "select-module " pack-name)) out)
                 (newline out)
 
-                (write-require-import (build-modules module-list) out)
+                (write-require-import (build-modules module-list) pack-name out)
                 (write-provide pack-name out)
 
                 (close-output-port out)
