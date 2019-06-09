@@ -108,10 +108,7 @@
 
 ; provideの一文を書き込む
 (define (write-provide name  out-port)
-    (display "(provide " out-port)
-    (display "\"" out-port)
-    (display name out-port)
-    (display "\")" out-port)
+    (display (string-append "(provide \"" name "\")")  out-port)
 )
 
 ; loadファイルに書き込むmodule部分のテキスト生成
@@ -127,10 +124,12 @@
 
 ; loadファイルに書き込むexports部分のテキスト生成
 (define (build-exports module-list)
-    (get-exportname
-        (flat 
-            (get-sexpr-from-allports define-module? 
-                (get-port-allfiles module-list)
+    (build-define-module 
+        (get-exportname
+            (flat 
+                (get-sexpr-from-allports define-module? 
+                    (get-port-allfiles module-list)
+                )
             )
         )
     )
