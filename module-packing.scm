@@ -85,33 +85,24 @@
 )
 
 ; (require ...) (import ...)を書き込む
-(define (write-require-import modules out-port)
+(define (write-require-import modules pack-name out-port)
     (cond
         ((null? modules))
         (else
             ; S式で再帰しながら書いたほうがきれいだよね...
             ; require
-            (display "(require " out-port)
-            (display "\"./modules/" out-port)
-            (display (car modules) out-port)
-            (display "\"" out-port)
-            (display ")" out-port)
+            (display (string-append "(require \"./" pack-name "/" (x->string (car modules)) "\")") out-port)
             ; import
-            (display "(import " out-port)
-            (display (car modules) out-port)
-            (display ")" out-port)
+            (display (string-append "(import " (x->string (car modules)) ")") out-port)
             (newline out-port)
-            (write-require-import (cdr modules) out-port)
+            (write-require-import (cdr modules) pack-name out-port)
         )
     )
 )
 
 ; provideの一文を書き込む
-(define (write-provide name  out-port)
-    (display "(provide " out-port)
-    (display "\"" out-port)
-    (display name out-port)
-    (display "\")" out-port)
+(define (write-provide name out-port)
+    (display (string-append "(provide \"" name "\")")  out-port)
 )
 
 ; loadファイルに書き込むmodule部分のテキスト生成
@@ -127,10 +118,12 @@
 
 ; loadファイルに書き込むexports部分のテキスト生成
 (define (build-exports module-list)
-    (get-exportname
-        (flat 
-            (get-sexpr-from-allports define-module? 
-                (get-port-allfiles module-list)
+    (build-define-module 
+        (get-exportname
+            (flat 
+                (get-sexpr-from-allports define-module? 
+                    (get-port-allfiles module-list)
+                )
             )
         )
     )
@@ -145,11 +138,6 @@
             . restargs
         )
         
-        ; for test
-        ;(print outfile-name)
-        ;(print modules-name)
-        ;(print is-recur)
-
         ; コマンドラインオプションにモジュールディレクトリの指定がない場合
         (if (and (not (pair? restargs)) (not modules-name))
             (exit 0)
@@ -171,11 +159,10 @@
                 (display (list (string-append "select-module " pack-name)) out)
                 (newline out)
 
-                (write-require-import (build-modules module-list) out)
+                (write-require-import (build-modules module-list) pack-name out)
                 (write-provide pack-name out)
 
                 (close-output-port out)
-
             )
         )
     )
