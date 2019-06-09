@@ -138,11 +138,6 @@
             . restargs
         )
         
-        ; for test
-        ;(print outfile-name)
-        ;(print modules-name)
-        ;(print is-recur)
-
         ; コマンドラインオプションにモジュールディレクトリの指定がない場合
         (if (and (not (pair? restargs)) (not modules-name))
             (exit 0)
@@ -168,7 +163,6 @@
                 (write-provide pack-name out)
 
                 (close-output-port out)
-
             )
         )
     )
