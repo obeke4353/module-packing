@@ -114,6 +114,28 @@
     (display "\")" out-port)
 )
 
+; loadファイルに書き込むmodule部分のテキスト生成
+(define (build-modules module-list)
+    (get-modulename
+        (flat 
+            (get-sexpr-from-allports define-module? 
+                (get-port-allfiles module-list)
+            )
+        )
+    )
+)
+
+; loadファイルに書き込むexports部分のテキスト生成
+(define (build-exports module-list)
+    (get-exportname
+        (flat 
+            (get-sexpr-from-allports define-module? 
+                (get-port-allfiles module-list)
+            )
+        )
+    )
+)
+
 (define (main args)
     (let-args (cdr args)
         (
@@ -122,10 +144,11 @@
             (is-recur "r|recure")
             . restargs
         )
+        
         ; for test
-        (print outfile-name)
-        (print modules-name)
-        (print is-recur)
+        ;(print outfile-name)
+        ;(print modules-name)
+        ;(print is-recur)
 
         ; コマンドラインオプションにモジュールディレクトリの指定がない場合
         (if (and (not (pair? restargs)) (not modules-name))
@@ -139,37 +162,21 @@
             (let
                 (
                     (module-list (directory-list (build-path (current-directory) pack-name) :add-path? #t :children? #t))
+                    (out (open-output-file (build-path (current-directory) (string-append pack-name ".scm")))) 
                 )
-                (print module-list)
+
+                (display (cons (string-append "define-module " pack-name) (build-exports module-list)) out)
+                (newline out)
+
+                (display (list (string-append "select-module " pack-name)) out)
+                (newline out)
+
+                (write-require-import (build-modules module-list) out)
+                (write-provide pack-name out)
+
+                (close-output-port out)
+
             )
-
-            ; (define module-list (directory-list (build-path (current-directory) pack-name :add-path? #t :children? #t)))
-            ; (define ports (get-port-allfiles module-list))
-            ; (define read-in (flat (get-sexpr-from-allports define-module? ports)))
-
-            ; (define modules (get-modulename read-in))
-            ; (define exports (build-define-module (get-exportname read-in)))
-
-            ; (define _define-module (cons (string-append "define-module " pack-name) exports))
-            ; (define _select-module (list (string-append "select-module " pack-name)))
-    
-            ; (define out (open-output-file (build-path (current-directory) (string-append pack-name ".scm"))))
-
-            ; (display _define-module out)
-            ; (newline out)
-
-            ; (display _select-module out)
-            ; (newline out)
-
-            ; (write-require-import modules out)
-            ; (write-provide pack-name out)
-
-            ; (close-output-port out)
-
         )
     )
 )
-
-
-    ; gosh module-packing.scm packing対象のディレクトリで起動した場合
-
