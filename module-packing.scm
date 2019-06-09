@@ -1,4 +1,5 @@
 (use file.util)
+(use gauche.parseopt)
 
 ; 全ファイルのポートをすべて開く
 (define (get-port-allfiles modules-path)
@@ -114,36 +115,42 @@
 )
 
 (define (main args)
-    ; gosh module-packing.scm packing対象のディレクトリで起動した場合
-    (if (not (pair? (cdr args)))
-        (exit 0)
-    )
-    (let
+    (let-args (cdr args)
         (
-            (pack-name (car (cdr args)))
-            (path (build-path (current-directory) (car (cdr args))))
+            (out-filename "o|outfile=s")
+            . restargs
         )
-        (define module-list (directory-list path :add-path? #t :children? #t))
-        (define ports (get-port-allfiles module-list))
-        (define read-in (flat (get-sexpr-from-allports define-module? ports)))
-
-        (define modules (get-modulename read-in))
-        (define exports (build-define-module (get-exportname read-in)))
-
-        (define _define-module (cons (string-append "define-module " pack-name) exports))
-        (define _select-module (list (string-append "select-module " pack-name)))
-    
-        (define out (open-output-file (build-path (current-directory) (string-append pack-name ".scm"))))
-
-        (display _define-module out)
-        (newline out)
-
-        (display _select-module out)
-        (newline out)
-
-        (write-require-import modules out)
-        (write-provide pack-name out)
-
-        (close-output-port out)
+        (print out-filename)
     )
 )
+
+    ; gosh module-packing.scm packing対象のディレクトリで起動した場合
+
+    ; (let
+    ;     (
+    ;         (pack-name (car (cdr args)))
+    ;         (path (build-path (current-directory) (car (cdr args))))
+    ;     )
+    ;     (define module-list (directory-list path :add-path? #t :children? #t))
+    ;     (define ports (get-port-allfiles module-list))
+    ;     (define read-in (flat (get-sexpr-from-allports define-module? ports)))
+
+    ;     (define modules (get-modulename read-in))
+    ;     (define exports (build-define-module (get-exportname read-in)))
+
+    ;     (define _define-module (cons (string-append "define-module " pack-name) exports))
+    ;     (define _select-module (list (string-append "select-module " pack-name)))
+    
+    ;     (define out (open-output-file (build-path (current-directory) (string-append pack-name ".scm"))))
+
+    ;     (display _define-module out)
+    ;     (newline out)
+
+    ;     (display _select-module out)
+    ;     (newline out)
+
+    ;     (write-require-import modules out)
+    ;     (write-provide pack-name out)
+
+    ;     (close-output-port out)
+    ; )
