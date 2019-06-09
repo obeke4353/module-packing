@@ -91,15 +91,9 @@
         (else
             ; S式で再帰しながら書いたほうがきれいだよね...
             ; require
-            (display "(require " out-port)
-            (display "\"./modules/" out-port)
-            (display (car modules) out-port)
-            (display "\"" out-port)
-            (display ")" out-port)
+            (display (string-append "(require \"./modules/" (x->string (car modules)) "\")") out-port)
             ; import
-            (display "(import " out-port)
-            (display (car modules) out-port)
-            (display ")" out-port)
+            (display (string-append "(import " (x->string (car modules)) ")") out-port)
             (newline out-port)
             (write-require-import (cdr modules) out-port)
         )
@@ -107,7 +101,7 @@
 )
 
 ; provideの一文を書き込む
-(define (write-provide name  out-port)
+(define (write-provide name out-port)
     (display (string-append "(provide \"" name "\")")  out-port)
 )
 
