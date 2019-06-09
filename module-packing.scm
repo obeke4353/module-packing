@@ -136,7 +136,36 @@
             (
                 (pack-name ((lambda (m r) (if (pair? restargs) (car r) m)) modules-name restargs))
             )
-            (print pack-name)
+            (let
+                (
+                    (module-list (directory-list (build-path (current-directory) pack-name) :add-path? #t :children? #t))
+                )
+                (print module-list)
+            )
+
+            ; (define module-list (directory-list (build-path (current-directory) pack-name :add-path? #t :children? #t)))
+            ; (define ports (get-port-allfiles module-list))
+            ; (define read-in (flat (get-sexpr-from-allports define-module? ports)))
+
+            ; (define modules (get-modulename read-in))
+            ; (define exports (build-define-module (get-exportname read-in)))
+
+            ; (define _define-module (cons (string-append "define-module " pack-name) exports))
+            ; (define _select-module (list (string-append "select-module " pack-name)))
+    
+            ; (define out (open-output-file (build-path (current-directory) (string-append pack-name ".scm"))))
+
+            ; (display _define-module out)
+            ; (newline out)
+
+            ; (display _select-module out)
+            ; (newline out)
+
+            ; (write-require-import modules out)
+            ; (write-provide pack-name out)
+
+            ; (close-output-port out)
+
         )
 
         ; (let
@@ -169,6 +198,7 @@
         ; )
     )
 )
+
 
     ; gosh module-packing.scm packing対象のディレクトリで起動した場合
 
