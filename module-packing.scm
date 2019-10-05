@@ -2,11 +2,11 @@
 (use gauche.parseopt)
 
 ; 全ファイルのポートをすべて開く
-(define (get-port-allfiles modules-path)
+(define (open-ports modules-path)
     (cond
         ((null? modules-path) '())
         (else
-            (cons (open-input-file (car modules-path)) (get-port-allfiles (cdr modules-path)))
+            (cons (open-input-file (car modules-path)) (open-ports (cdr modules-path)))
         )
     )
 )
@@ -110,7 +110,7 @@
     (get-modulename
         (flat 
             (get-sexpr-from-allports define-module? 
-                (get-port-allfiles module-list)
+                (open-ports module-list)
             )
         )
     )
@@ -122,7 +122,7 @@
         (get-exportname
             (flat 
                 (get-sexpr-from-allports define-module? 
-                    (get-port-allfiles module-list)
+                    (open-ports module-list)
                 )
             )
         )
