@@ -160,7 +160,7 @@
                 (newline out)
 
                 (write-require-and-import-sexpr-to-pack-file (build-modules module-list) pack-name out)
-                (write-provide pack-name out)
+                (display (string-append "(provide \"" pack-name "\")") out)
 
                 (close-output-port out)
             )
