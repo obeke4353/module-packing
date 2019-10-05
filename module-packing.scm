@@ -85,7 +85,7 @@
 )
 
 ; (require ...) (import ...)を書き込む
-(define (write-require-import modules pack-name out-port)
+(define (write-require-and-import-sexpr-to-pack-file modules pack-name out-port)
     (cond
         ((null? modules))
         (else
@@ -95,7 +95,7 @@
             ; import
             (display (string-append "(import " (x->string (car modules)) ")") out-port)
             (newline out-port)
-            (write-require-import (cdr modules) pack-name out-port)
+            (write-require-and-import-sexpr-to-pack-file (cdr modules) pack-name out-port)
         )
     )
 )
@@ -159,7 +159,7 @@
                 (display (list (string-append "select-module " pack-name)) out)
                 (newline out)
 
-                (write-require-import (build-modules module-list) pack-name out)
+                (write-require-and-import-sexpr-to-pack-file (build-modules module-list) pack-name out)
                 (write-provide pack-name out)
 
                 (close-output-port out)
