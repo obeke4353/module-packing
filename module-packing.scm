@@ -2,11 +2,11 @@
 (use gauche.parseopt)
 
 ; 全ファイルのポートをすべて開く
-(define (get-port-allfiles modules-path)
+(define (open-ports modules-path)
     (cond
         ((null? modules-path) '())
         (else
-            (cons (open-input-file (car modules-path)) (get-port-allfiles (cdr modules-path)))
+            (cons (open-input-file (car modules-path)) (open-ports (cdr modules-path)))
         )
     )
 )
@@ -25,16 +25,16 @@
     )
 )
 
-; get-sexpr-from-allportsで使用する述語
+; filter-sexprで使用する述語
 (define (define-module? x) (if (equal? 'define-module x) #t #f))
 (define (export? x) (if (equal? 'export x) #t #f))
 
 ; すべてのポートから述語に合致するS式を取得する。
-(define (get-sexpr-from-allports pred ports)
+(define (filter-sexpr pred ports)
     (cond
         ((null? ports) '())
         (else
-            (cons (filter-fileport pred (car ports)) (get-sexpr-from-allports pred (cdr ports)))
+            (cons (filter-fileport pred (car ports)) (filter-sexpr pred (cdr ports)))
         )
     )
 )
@@ -85,7 +85,7 @@
 )
 
 ; (require ...) (import ...)を書き込む
-(define (write-require-import modules pack-name out-port)
+(define (write-require-and-import-sexpr-to-pack-file modules pack-name out-port)
     (cond
         ((null? modules))
         (else
@@ -95,22 +95,17 @@
             ; import
             (display (string-append "(import " (x->string (car modules)) ")") out-port)
             (newline out-port)
-            (write-require-import (cdr modules) pack-name out-port)
+            (write-require-and-import-sexpr-to-pack-file (cdr modules) pack-name out-port)
         )
     )
-)
-
-; provideの一文を書き込む
-(define (write-provide name out-port)
-    (display (string-append "(provide \"" name "\")")  out-port)
 )
 
 ; loadファイルに書き込むmodule部分のテキスト生成
 (define (build-modules module-list)
     (get-modulename
         (flat 
-            (get-sexpr-from-allports define-module? 
-                (get-port-allfiles module-list)
+            (filter-sexpr define-module? 
+                (open-ports module-list)
             )
         )
     )
@@ -121,8 +116,8 @@
     (build-define-module 
         (get-exportname
             (flat 
-                (get-sexpr-from-allports define-module? 
-                    (get-port-allfiles module-list)
+                (filter-sexpr define-module? 
+                    (open-ports module-list)
                 )
             )
         )
@@ -159,8 +154,8 @@
                 (display (list (string-append "select-module " pack-name)) out)
                 (newline out)
 
-                (write-require-import (build-modules module-list) pack-name out)
-                (write-provide pack-name out)
+                (write-require-and-import-sexpr-to-pack-file (build-modules module-list) pack-name out)
+                (display (string-append "(provide \"" pack-name "\")") out)
 
                 (close-output-port out)
             )
