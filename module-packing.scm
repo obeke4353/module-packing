@@ -100,11 +100,6 @@
     )
 )
 
-; provideの一文を書き込む
-(define (write-provide name out-port)
-    (display (string-append "(provide \"" name "\")")  out-port)
-)
-
 ; loadファイルに書き込むmodule部分のテキスト生成
 (define (build-modules module-list)
     (get-modulename
