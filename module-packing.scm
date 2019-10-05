@@ -74,12 +74,12 @@
     )
 )
 
-; require.scmの先頭に記述する要素を決定
-(define (build-define-module exports)
+; modules.scmの先頭に記述する要素を決定
+(define (write-export-sexpr-to-pack-file exports)
     (cond 
         ((null? exports) '())
         (else
-            (cons (list (string-append "export " (x->string (car exports)))) (build-define-module (cdr exports)))
+            (cons (list (string-append "export " (x->string (car exports)))) (write-export-sexpr-to-pack-file (cdr exports)))
         )
     )
 )
@@ -118,7 +118,7 @@
 
 ; loadファイルに書き込むexports部分のテキスト生成
 (define (build-exports module-list)
-    (build-define-module 
+    (write-export-sexpr-to-pack-file 
         (get-exportname
             (flat 
                 (filter-sexpr define-module? 
