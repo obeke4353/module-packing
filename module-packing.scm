@@ -25,16 +25,16 @@
     )
 )
 
-; get-sexpr-from-allportsで使用する述語
+; filter-sexprで使用する述語
 (define (define-module? x) (if (equal? 'define-module x) #t #f))
 (define (export? x) (if (equal? 'export x) #t #f))
 
 ; すべてのポートから述語に合致するS式を取得する。
-(define (get-sexpr-from-allports pred ports)
+(define (filter-sexpr pred ports)
     (cond
         ((null? ports) '())
         (else
-            (cons (filter-fileport pred (car ports)) (get-sexpr-from-allports pred (cdr ports)))
+            (cons (filter-fileport pred (car ports)) (filter-sexpr pred (cdr ports)))
         )
     )
 )
@@ -109,7 +109,7 @@
 (define (build-modules module-list)
     (get-modulename
         (flat 
-            (get-sexpr-from-allports define-module? 
+            (filter-sexpr define-module? 
                 (open-ports module-list)
             )
         )
@@ -121,7 +121,7 @@
     (build-define-module 
         (get-exportname
             (flat 
-                (get-sexpr-from-allports define-module? 
+                (filter-sexpr define-module? 
                     (open-ports module-list)
                 )
             )
