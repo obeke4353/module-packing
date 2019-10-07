@@ -124,6 +124,23 @@
     )
 )
 
+; サブディレクトリを再帰的に検索する。
+(define (find-module-recur module-list pack-name)
+    (define (_find-module-recur module-list result pack-name)
+        (cond
+            ((null? module-list) result)
+            ; ディレクトリならば再帰的に中のファイルを取得する
+            ((file-is-directory? (car module-list))
+                (_find-module-recur (directory-list (car module-list) :add-path? #t :children? #t) result pack-name)
+            )
+            (else
+                (_find-module-recur (cdr module-list) (cons (car module-list) result) pack-name)
+            )
+        )
+    )
+    (_find-module-recur module-list '() pack-name)
+)
+
 (define (main args)
     (let-args (cdr args)
         (
@@ -151,6 +168,7 @@
                 ; recurコマンドライン引数を設定しなかった場合、サブディレクトリはmodule-list内から削除
                 (if (eq? is-recur #f)
                     (set! module-list (remove file-is-directory? module-list))
+                    (set! module-list (find-module-recur module-list pack-name))
                 )
 
                 (display (cons (string-append "define-module " pack-name) (build-exports module-list)) out)
