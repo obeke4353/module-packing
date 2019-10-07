@@ -129,7 +129,7 @@
         (
             (outfile-name "o|outfile=s")
             (modules-name "m|module=s")
-            (is-recur "r|recure")
+            (is-recur "r|recur")
             . restargs
         )
         
@@ -146,6 +146,11 @@
                 (
                     (module-list (directory-list (build-path (current-directory) pack-name) :add-path? #t :children? #t))
                     (out (open-output-file (build-path (current-directory) (string-append pack-name ".scm")))) 
+                )
+
+                ; recurコマンドライン引数を設定しなかった場合、サブディレクトリはmodule-list内から削除
+                (if (eq? is-recur #f)
+                    (set! module-list (remove file-is-directory? module-list))
                 )
 
                 (display (cons (string-append "define-module " pack-name) (build-exports module-list)) out)
