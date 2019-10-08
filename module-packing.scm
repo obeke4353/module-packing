@@ -92,7 +92,7 @@
             ; S式で再帰しながら書いたほうがきれいだよね...
             ; require
             ; [TODO] 入れ子のモジュールのパス名を記載する方法を考える。 → module-listだけでなく、module-path-listも必要であることに気づいた。
-            (display (string-append "(require \"./" pack-name "/" (x->string #?=(car modules)) "\")") out-port)
+            (display (string-append "(require \""  (x->string (car modules)) "\")") out-port)
             ; import
             (display (string-append "(import " (x->string (car modules)) ")") out-port)
             (newline out-port)
@@ -162,14 +162,17 @@
             )
             (let
                 (
-                    (module-list (directory-list (build-path (current-directory) pack-name) :add-path? #t :children? #t))
+                    (module-list (directory-list (build-path "./" pack-name) :add-path? #t :children? #t))
                     (out (open-output-file (build-path (current-directory) (string-append pack-name ".scm")))) 
                 )
 
                 ; recurコマンドライン引数を設定しなかった場合、サブディレクトリはmodule-list内から削除
-                (if (eq? is-recur #f)
-                    (set! module-list (remove file-is-directory? module-list))
-                    (set! module-list (find-module-recur module-list pack-name))
+                (cond 
+                    ((eq? is-recur #f) (set! module-list (remove file-is-directory? module-list)))
+                    (else
+                        ; サブディレクトリ内のモジュール名のリスト
+                        (set! module-list (find-module-recur module-list pack-name))
+                    )
                 )
 
                 (display (cons (string-append "define-module " pack-name) (build-exports module-list)) out)
@@ -178,7 +181,7 @@
                 (display (list (string-append "select-module " pack-name)) out)
                 (newline out)
 
-                (write-require-and-import-sexpr-to-pack-file (build-modules module-list) pack-name out)
+                (write-require-and-import-sexpr-to-pack-file module-list pack-name out)
                 (display (string-append "(provide \"" pack-name "\")") out)
 
                 (close-output-port out)
