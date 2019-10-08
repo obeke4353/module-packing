@@ -91,7 +91,8 @@
         (else
             ; S式で再帰しながら書いたほうがきれいだよね...
             ; require
-            (display (string-append "(require \"./" pack-name "/" (x->string (car modules)) "\")") out-port)
+            ; [TODO] 入れ子のモジュールのパス名を記載する方法を考える。 → module-listだけでなく、module-path-listも必要であることに気づいた。
+            (display (string-append "(require \"./" pack-name "/" (x->string #?=(car modules)) "\")") out-port)
             ; import
             (display (string-append "(import " (x->string (car modules)) ")") out-port)
             (newline out-port)
