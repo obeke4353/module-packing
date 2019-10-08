@@ -85,18 +85,18 @@
 )
 
 ; (require ...) (import ...)を書き込む
-(define (write-require-and-import-sexpr-to-pack-file modules pack-name out-port)
+; [TODO] names引数の部分がきれいじゃないから直す
+(define (write-require-and-import-sexpr-to-pack-file modules names pack-name out-port)
     (cond
         ((null? modules))
         (else
             ; S式で再帰しながら書いたほうがきれいだよね...
             ; require
-            ; [TODO] 入れ子のモジュールのパス名を記載する方法を考える。 → module-listだけでなく、module-path-listも必要であることに気づいた。
             (display (string-append "(require \""  (x->string (car modules)) "\")") out-port)
             ; import
-            (display (string-append "(import " (x->string (car modules)) ")") out-port)
+            (display (string-append "(import " (x->string (car names)) ")") out-port)
             (newline out-port)
-            (write-require-and-import-sexpr-to-pack-file (cdr modules) pack-name out-port)
+            (write-require-and-import-sexpr-to-pack-file (cdr modules) (cdr names) pack-name out-port)
         )
     )
 )
@@ -181,7 +181,7 @@
                 (display (list (string-append "select-module " pack-name)) out)
                 (newline out)
 
-                (write-require-and-import-sexpr-to-pack-file module-list pack-name out)
+                (write-require-and-import-sexpr-to-pack-file module-list (build-modules module-list) pack-name out)
                 (display (string-append "(provide \"" pack-name "\")") out)
 
                 (close-output-port out)
