@@ -1,3 +1,4 @@
+(use srfi-13)
 (use file.util)
 (use gauche.parseopt)
 
@@ -92,12 +93,21 @@
         (else
             ; S式で再帰しながら書いたほうがきれいだよね...
             ; require
-            (display (string-append "(require \""  (x->string (car modules)) "\")") out-port)
+            (display (string-append "(require \"" (x->string (car modules)) "\")") out-port)
             ; import
             (display (string-append "(import " (x->string (car names)) ")") out-port)
             (newline out-port)
             (write-require-and-import-sexpr-to-pack-file (cdr modules) (cdr names) pack-name out-port)
         )
+    )
+)
+
+(define (replace-yen-to-slash modules)
+    (cond
+        ((null? modules) '())
+        (else
+            (cons (string-join (string-split (car modules) "\\") "/") (replace-yen-to-slash (cdr modules)))
+        )    
     )
 )
 
@@ -170,6 +180,9 @@
                         (set! module-list (find-module-recur module-list pack-name))
                     )
                 )
+
+                ; \を/に変換
+                (set! module-list (replace-yen-to-slash module-list))
 
                 (display (cons (string-append "define-module " pack-name) (build-exports module-list)) out)
                 (newline out)
