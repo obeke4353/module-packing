@@ -156,16 +156,12 @@
             (exit 0)
         )
 
-        (let 
+        (let* 
             (
                 (pack-name ((lambda (m r) (if (pair? restargs) (car r) m)) modules-name restargs))
+                (module-list (directory-list (build-path "./" pack-name) :add-path? #t :children? #t))
+                (out (open-output-file (build-path (current-directory) (string-append pack-name ".scm"))))
             )
-            (let
-                (
-                    (module-list (directory-list (build-path "./" pack-name) :add-path? #t :children? #t))
-                    (out (open-output-file (build-path (current-directory) (string-append pack-name ".scm")))) 
-                )
-
                 ; recurコマンドライン引数を設定しなかった場合、サブディレクトリはmodule-list内から削除
                 (cond 
                     ((eq? is-recur #f) (set! module-list (remove file-is-directory? module-list)))
@@ -185,7 +181,6 @@
                 (display (string-append "(provide \"" pack-name "\")") out)
 
                 (close-output-port out)
-            )
         )
     )
 )
