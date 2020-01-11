@@ -1,3 +1,4 @@
+(use srfi-13)
 (use file.util)
 (use gauche.parseopt)
 
@@ -85,18 +86,28 @@
 )
 
 ; (require ...) (import ...)を書き込む
-(define (write-require-and-import-sexpr-to-pack-file modules pack-name out-port)
+; [TODO] names引数の部分がきれいじゃないから直す
+(define (write-require-and-import-sexpr-to-pack-file modules names pack-name out-port)
     (cond
         ((null? modules))
         (else
             ; S式で再帰しながら書いたほうがきれいだよね...
             ; require
-            (display (string-append "(require \"./" pack-name "/" (x->string (car modules)) "\")") out-port)
+            (display (string-append "(require \"" (x->string (car modules)) "\")") out-port)
             ; import
-            (display (string-append "(import " (x->string (car modules)) ")") out-port)
+            (display (string-append "(import " (x->string (car names)) ")") out-port)
             (newline out-port)
-            (write-require-and-import-sexpr-to-pack-file (cdr modules) pack-name out-port)
+            (write-require-and-import-sexpr-to-pack-file (cdr modules) (cdr names) pack-name out-port)
         )
+    )
+)
+
+(define (replace-yen-to-slash modules)
+    (cond
+        ((null? modules) '())
+        (else
+            (cons (string-join (string-split (car modules) "\\") "/") (replace-yen-to-slash (cdr modules)))
+        )    
     )
 )
 
@@ -124,12 +135,29 @@
     )
 )
 
+; サブディレクトリを再帰的に検索する。
+(define (find-module-recur module-list pack-name)
+    (define (_find-module-recur module-list result pack-name)
+        (cond
+            ((null? module-list) result)
+            ; ディレクトリならば再帰的に中のファイルを取得する
+            ((file-is-directory? (car module-list))
+                (_find-module-recur (directory-list (car module-list) :add-path? #t :children? #t) result pack-name)
+            )
+            (else
+                (_find-module-recur (cdr module-list) (cons (car module-list) result) pack-name)
+            )
+        )
+    )
+    (_find-module-recur module-list '() pack-name)
+)
+
 (define (main args)
     (let-args (cdr args)
         (
             (outfile-name "o|outfile=s")
             (modules-name "m|module=s")
-            (is-recur "r|recure")
+            (is-recur "r|recur")
             . restargs
         )
         
@@ -138,15 +166,23 @@
             (exit 0)
         )
 
-        (let 
+        (let* 
             (
                 (pack-name ((lambda (m r) (if (pair? restargs) (car r) m)) modules-name restargs))
+                (module-list (directory-list (build-path "./" pack-name) :add-path? #t :children? #t))
+                (out (open-output-file (build-path (current-directory) (string-append pack-name ".scm"))))
             )
-            (let
-                (
-                    (module-list (directory-list (build-path (current-directory) pack-name) :add-path? #t :children? #t))
-                    (out (open-output-file (build-path (current-directory) (string-append pack-name ".scm")))) 
+                ; recurコマンドライン引数を設定しなかった場合、サブディレクトリはmodule-list内から削除
+                (cond 
+                    ((eq? is-recur #f) (set! module-list (remove file-is-directory? module-list)))
+                    (else
+                        ; サブディレクトリ内のモジュール名のリスト
+                        (set! module-list (find-module-recur module-list pack-name))
+                    )
                 )
+
+                ; \を/に変換
+                (set! module-list (replace-yen-to-slash module-list))
 
                 (display (cons (string-append "define-module " pack-name) (build-exports module-list)) out)
                 (newline out)
@@ -154,11 +190,10 @@
                 (display (list (string-append "select-module " pack-name)) out)
                 (newline out)
 
-                (write-require-and-import-sexpr-to-pack-file (build-modules module-list) pack-name out)
+                (write-require-and-import-sexpr-to-pack-file module-list (build-modules module-list) pack-name out)
                 (display (string-append "(provide \"" pack-name "\")") out)
 
                 (close-output-port out)
-            )
         )
     )
 )
