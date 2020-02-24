@@ -26,4 +26,4 @@ $ ls
 おんてゃん(⋈◍＞◡＜◍)。✧♡
 
 # 📖References
-* ![Gauche ユーザリファレンス](http://practical-scheme.net/gauche/man/gauche-refj/index.html)
+* [Gauche ユーザリファレンス](http://practical-scheme.net/gauche/man/gauche-refj/index.html)
