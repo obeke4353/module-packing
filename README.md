@@ -6,7 +6,7 @@ module-packing.scm起動時にコマンドライン引数で引き渡したデ�
 
 ## Preparing
 ```
-$ git clone https://github.com/dko-n/module-packing」
+$ git clone https://github.com/dko-n/module-packing
 ```
 
 ## Usage
