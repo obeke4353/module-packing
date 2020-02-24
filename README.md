@@ -11,7 +11,7 @@ $ git clone https://github.com/dko-n/module-packing
 
 # 👍Usage
 modulesディレクトリ内にはexport設定の記述がされたSchemeスクリプトが配置されているとします。  
-その状態で、ディレクトリの名称をコマンドライン引数に指定して、module-packing.scmを実行すると、  
+その状態でディレクトリの名称をコマンドライン引数に指定してmodule-packing.scmを実行すると、  
 ディレクトリ内のすべてのSchemeスクリプトのexport設定の記述がまとめて記述されたSchemeスクリプトファイルが生成されます。
 ```
 $ ls
