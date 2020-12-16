@@ -23,7 +23,7 @@ $ ls
 >> module-packing.scm modules.scm modules
 ```
 # 📝Author
-おんてゃん(⋈◍＞◡＜◍)。✧♡
+おべけ！？
 
 # 📖References
 * [Gauche ユーザリファレンス](http://practical-scheme.net/gauche/man/gauche-refj/index.html)
